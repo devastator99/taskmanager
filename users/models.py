@@ -12,3 +12,12 @@ class User(AbstractUser):
 
     def is_admin(self):
         return self.role == 'admin'
+
+    def save(self, *args, **kwargs):
+        if self.role == 'admin':
+            self.is_staff = True
+            self.is_superuser = True
+        else:
+            self.is_staff = False
+            self.is_superuser = False
+        super().save(*args, **kwargs)
