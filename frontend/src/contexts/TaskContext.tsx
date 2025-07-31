@@ -11,7 +11,7 @@ interface TaskContextType {
   
   // Current state
   selectedProject: Project | null;
-  currentView: 'list' | 'kanban' | 'calendar' | 'gantt';
+  currentView: 'overview' | 'list' | 'kanban' | 'calendar' | 'gantt';
   filters: FilterOptions;
   searchQuery: string;
   
@@ -22,7 +22,7 @@ interface TaskContextType {
   createProject: (project: Omit<Project, 'id' | 'createdAt' | 'updatedAt'>) => void;
   updateProject: (id: string, updates: Partial<Project>) => void;
   setSelectedProject: (project: Project | null) => void;
-  setCurrentView: (view: 'list' | 'kanban' | 'calendar' | 'gantt') => void;
+  setCurrentView: (view: 'overview' | 'list' | 'kanban' | 'calendar' | 'gantt') => void;
   setFilters: (filters: FilterOptions) => void;
   setSearchQuery: (query: string) => void;
   markNotificationRead: (id: string) => void;
@@ -123,7 +123,7 @@ export const TaskProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [templates, setTemplates] = useState<Template[]>([]);
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
-  const [currentView, setCurrentView] = useState<'list' | 'kanban' | 'calendar' | 'gantt'>('kanban');
+  const [currentView, setCurrentView] = useState<'overview' | 'list' | 'kanban' | 'calendar' | 'gantt'>('overview');
   const [filters, setFilters] = useState<FilterOptions>({});
   const [searchQuery, setSearchQuery] = useState('');
 

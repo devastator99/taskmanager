@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import { FiSearch, FiBell, FiMenu, FiSun, FiMoon, FiMonitor, FiPlus, FiFolder, FiChevronDown, FiHome, FiInbox, FiStar, FiClock, FiCalendar, FiBarChart2, FiSettings } from 'react-icons/fi';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { FiSearch, FiBell, FiMenu, FiSun, FiMoon, FiMonitor, FiPlus, FiFolder, FiChevronDown, FiHome, FiInbox, FiCalendar, FiSettings, FiGrid, FiList } from 'react-icons/fi';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -13,6 +13,7 @@ import { useTask } from '@/contexts/TaskContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { NewTaskModal } from '@/components/dashboard/NewTaskModal';
 import { cn } from '@/lib/utils';
+import { ViewSelector, ViewType } from '@/components/dashboard/ViewSelector';
 
 export const Header: React.FC = () => {
   const location = useLocation();
@@ -21,13 +22,13 @@ export const Header: React.FC = () => {
   const { user, isAdmin, logout } = useAuth();
   const [showNewTaskModal, setShowNewTaskModal] = useState(false);
 
+  const navigate = useNavigate();
+
   const navigationItems = [
-    { icon: FiHome, label: 'Dashboard', href: '/' },
-    { icon: FiInbox, label: 'My Tasks', href: '/tasks', badge: metrics.tasksInProgress },
-    { icon: FiStar, label: 'Important', href: '/important' },
-    { icon: FiClock, label: 'Due Today', href: '/due-today', badge: metrics.tasksDueToday },
+    { icon: FiHome, label: 'Overview', href: '/' },
+    { icon: FiGrid, label: 'Kanban', href: '/kanban' },
+    { icon: FiList, label: 'List', href: '/list' },
     { icon: FiCalendar, label: 'Calendar', href: '/calendar' },
-    { icon: FiBarChart2, label: 'Reports', href: '/reports' },
   ];
 
   const adminNavItem = { icon: FiSettings, label: 'Admin', href: '/admin' };
@@ -41,7 +42,6 @@ export const Header: React.FC = () => {
           <Link to={item.href} className="flex items-center gap-2">
             <item.icon className="h-4 w-4" />
             {item.label}
-            {item.badge != null && item.badge > 0 && <Badge variant="default" className="ml-auto h-5 px-2 text-xs">{item.badge}</Badge>}
           </Link>
         </Button>
       ))}
@@ -85,6 +85,25 @@ export const Header: React.FC = () => {
     </DropdownMenu>
   );
 
+  const currentView: ViewType = (() => {
+    switch (location.pathname) {
+      case '/': return 'overview';
+      case '/kanban': return 'kanban';
+      case '/list': return 'list';
+      case '/calendar': return 'calendar';
+      default: return 'overview'; // Default to overview if path doesn't match
+    }
+  })();
+
+  const handleViewChange = (view: ViewType) => {
+    switch (view) {
+      case 'overview': navigate('/'); break;
+      case 'kanban': navigate('/kanban'); break;
+      case 'list': navigate('/list'); break;
+      case 'calendar': navigate('/calendar'); break;
+    }
+  };
+
   return (
     <header className="bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-border sticky top-0 z-30">
       <div className="flex items-center justify-between px-4 py-2">
@@ -106,6 +125,7 @@ export const Header: React.FC = () => {
               <div className="flex flex-col gap-2">
                 <ProjectSwitcher isMobile />
                 <NavLinks isMobile />
+                <ViewSelector currentView={currentView} onViewChange={handleViewChange} />
               </div>
             </SheetContent>
           </Sheet>
@@ -117,14 +137,14 @@ export const Header: React.FC = () => {
               </div>
               <h1 className="font-bold text-lg">TaskFlow</h1>
             </div>
+            <ViewSelector currentView={currentView} onViewChange={handleViewChange} />
             <ProjectSwitcher />
           </div>
         </div>
 
-        {/* Center Section */}
-        <div className="hidden lg:flex items-center gap-2 flex-1 max-w-2xl">
-          <NavLinks />
-          <div className="relative w-full max-w-md ml-auto">
+        {/* Right Section */}
+        <div className="flex items-center gap-2">
+          <div className="relative w-full max-w-md">
             <FiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input
               placeholder="Search tasks..."
@@ -133,10 +153,6 @@ export const Header: React.FC = () => {
               className="pl-10 bg-muted/50"
             />
           </div>
-        </div>
-
-        {/* Right Section */}
-        <div className="flex items-center gap-2">
           <Button size="sm" className="gap-2" onClick={() => setShowNewTaskModal(true)}>
             <FiPlus className="w-4 h-4" />
             <span className="hidden sm:inline">New</span>

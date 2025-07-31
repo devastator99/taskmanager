@@ -5,9 +5,13 @@ import { Toaster } from 'sonner';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { TaskProvider } from './contexts/TaskContext';
+import { ProjectProvider } from './contexts/ProjectContext';
 
 import { Header } from './components/layout/Header';
 import { Dashboard } from './components/Dashboard';
+import { TaskList } from './components/dashboard/TaskList';
+import { KanbanBoard } from './components/tasks/KanbanBoard';
+import { CalendarView } from './components/dashboard/CalendarView';
 import { AuthPage } from './components/auth/AuthPage';
 import { ProtectedRoute } from './components/auth/ProtectedRoute';
 import { AdminDashboard } from './components/admin/AdminDashboard';
@@ -18,8 +22,10 @@ function App() {
       <ThemeProvider>
         <AuthProvider>
           <TaskProvider>
-            <Toaster />
-            <MainApp />
+            <ProjectProvider>
+              <Toaster />
+              <MainApp />
+            </ProjectProvider>
           </TaskProvider>
         </AuthProvider>
       </ThemeProvider>
@@ -50,15 +56,13 @@ function MainApp() {
   return (
     <div className="flex flex-col h-screen bg-background text-foreground">
       <Header />
-      <main className="flex-1 overflow-y-auto p-6">
+      <main className="flex-1 overflow-y-auto">
         <Routes>
-          <Route path="/" element={<Dashboard />} />
+          <Route path="/" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
           {/* Add other protected routes here */}
-          <Route path="/tasks" element={<div>My Tasks</div>} />
-          <Route path="/important" element={<div>Important</div>} />
-          <Route path="/due-today" element={<div>Due Today</div>} />
-          <Route path="/calendar" element={<div>Calendar</div>} />
-          <Route path="/reports" element={<div>Reports</div>} />
+          <Route path="/kanban" element={<ProtectedRoute><KanbanBoard /></ProtectedRoute>} />
+          <Route path="/list" element={<ProtectedRoute><TaskList filters={{ status: [], priority: [], assignee: [], dateRange: 'all', tags: [], project: [] }} searchQuery="" /></ProtectedRoute>} />
+          <Route path="/calendar" element={<ProtectedRoute><CalendarView/></ProtectedRoute>} />
           <Route path="/admin" element={<ProtectedRoute adminOnly><AdminDashboard /></ProtectedRoute>} />
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>

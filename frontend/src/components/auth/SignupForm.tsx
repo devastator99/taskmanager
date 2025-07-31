@@ -14,7 +14,7 @@ import { PasswordStrength } from './PasswordStrength';
 import { toast } from '@/hooks/use-toast';
 
 const signupSchema = z.object({
-  name: z.string().min(2, 'Name must be at least 2 characters'),
+  username: z.string().min(3, 'Username must be at least 3 characters'),
   email: z.string().email('Please enter a valid email address'),
   password: z.string()
     .min(8, 'Password must be at least 8 characters')
@@ -55,7 +55,7 @@ export const SignupForm: React.FC = () => {
     console.log('Signup form submitted with data:', data);
     setIsLoading(true);
     try {
-      await signup(data.email, data.password, data.name);
+      await signup(data.email, data.password, data.username);
       toast({
         title: "Account created!",
         description: "Welcome to our platform. You've successfully signed up.",
@@ -103,19 +103,19 @@ export const SignupForm: React.FC = () => {
 
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="name">Full Name</Label>
+              <Label htmlFor="username">Username</Label>
               <div className="relative">
                 <FiUser className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={20} />
                 <Input
-                  id="name"
+                  id="username"
                   type="text"
-                  placeholder="John Doe"
+                  placeholder="Choose a username"
                   className="pl-10"
-                  {...register('name')}
+                  {...register('username')}
                 />
               </div>
-              {errors.name && (
-                <p className="text-sm text-destructive">{errors.name.message}</p>
+              {errors.username && (
+                <p className="text-sm text-destructive">{errors.username.message}</p>
               )}
             </div>
 

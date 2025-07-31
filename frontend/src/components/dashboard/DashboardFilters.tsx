@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
+import { useProject } from '@/contexts/ProjectContext';
 
 export interface FilterOptions {
   status: string[];
@@ -13,6 +14,7 @@ export interface FilterOptions {
   assignee: string[];
   dateRange: string;
   tags: string[];
+  project: string[]; // Add project filter
 }
 
 interface DashboardFiltersProps {
@@ -28,6 +30,7 @@ export const DashboardFilters: React.FC<DashboardFiltersProps> = ({
   isOpen,
   onToggle,
 }) => {
+  const { projects } = useProject();
   const statusOptions = ['todo', 'in-progress', 'completed', 'on-hold'];
   const priorityOptions = ['low', 'medium', 'high', 'urgent'];
   const assigneeOptions = ['John Doe', 'Jane Smith', 'Mike Johnson', 'Sarah Wilson'];
@@ -58,7 +61,8 @@ export const DashboardFilters: React.FC<DashboardFiltersProps> = ({
       priority: [],
       assignee: [],
       dateRange: 'all',
-      tags: []
+      tags: [],
+      project: []
     });
   };
 
@@ -233,6 +237,30 @@ export const DashboardFilters: React.FC<DashboardFiltersProps> = ({
                       </Badge>
                     ))}
                   </div>
+                </div>
+
+                {/* Projects */}
+                <div className="space-y-2">
+                  <label className="text-sm font-medium flex items-center gap-2">
+                    <FiTag className="w-4 h-4" />
+                    Project
+                  </label>
+                  <Select
+                    onValueChange={(value) => updateFilter('project', value ? [value] : [])}
+                    value={filters.project.length > 0 ? filters.project[0] : ''}
+                  >
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Filter by project" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="">All Projects</SelectItem>
+                      {projects.map((project) => (
+                        <SelectItem key={project.id} value={project.id.toString()}>
+                          {project.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
               </CardContent>
             </Card>

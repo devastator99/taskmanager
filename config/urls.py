@@ -23,13 +23,15 @@ from rest_framework_simplejwt.views import (
 from django.contrib import admin
 from tasks import urls as tasks_urls
 from users import urls as users_urls
+from projects import urls as projects_urls
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/auth/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/auth/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
-    path('api/', include(tasks_urls)),   # we’ll create this next
-    path('api/auth/', include(users_urls)), # Include users app urls under /api/auth/
+    path('api/', include(tasks_urls)),
+    path('api/auth/', include(users_urls)),
+    path('api/', include(projects_urls)), # Include projects app urls under /api/
 
     # Serve the React frontend
     re_path(r'^(?!api/).*$', TemplateView.as_view(template_name='index.html')),

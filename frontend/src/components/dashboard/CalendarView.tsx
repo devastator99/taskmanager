@@ -110,8 +110,8 @@ export const CalendarView: React.FC<CalendarViewProps> = ({ className }) => {
   };
 
   return (
-    <div className={className}>
-      <Card>
+    <div className={`${className} flex flex-col h-full overflow-x-auto p-6`}>
+      <Card className="flex flex-col flex-1">
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle className="text-xl font-semibold">
@@ -145,9 +145,9 @@ export const CalendarView: React.FC<CalendarViewProps> = ({ className }) => {
             </div>
           </div>
         </CardHeader>
-        <CardContent>
+        <CardContent className="flex-1 overflow-hidden flex flex-col">
           {/* Calendar Grid */}
-          <div className="grid grid-cols-7 gap-1">
+          <div className="grid grid-cols-7 grid-rows-6 gap-1 flex-1 overflow-auto w-full">
             {/* Day Headers */}
             {dayNames.map((day) => (
               <div
@@ -166,7 +166,7 @@ export const CalendarView: React.FC<CalendarViewProps> = ({ className }) => {
                 animate={{ opacity: 1 }}
                 transition={{ duration: 0.2, delay: index * 0.01 }}
                 className={`
-                  min-h-[80px] p-1 border border-border/50 rounded-sm
+                  p-1 border border-border/50 rounded-sm
                   ${dayData.isCurrentMonth ? 'bg-background' : 'bg-muted/30'}
                   ${isToday(dayData.day, dayData.isCurrentMonth) ? 'ring-2 ring-primary' : ''}
                   hover:bg-muted/50 transition-colors cursor-pointer

@@ -13,12 +13,14 @@ import { Calendar } from '@/components/ui/calendar';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
+import { useProject } from '@/contexts/ProjectContext';
 
 const newTaskSchema = z.object({
   title: z.string().min(1, 'Task title is required'),
   description: z.string().optional(),
   dueDate: z.date().optional(),
   priority: z.enum(['Low', 'Medium', 'High']).default('Medium'),
+  project: z.string().optional(), // Add project field
 });
 
 type NewTaskFormData = z.infer<typeof newTaskSchema>;
@@ -33,11 +35,16 @@ export const NewTaskForm: React.FC<NewTaskFormProps> = ({ onClose, onTaskCreated
   const { register, handleSubmit, control, setValue, formState: { errors } } = useForm<NewTaskFormData>({
     resolver: zodResolver(newTaskSchema),
   });
+  const { projects } = useProject();
 
   const onSubmit = async (data: NewTaskFormData) => {
     setIsLoading(true);
     try {
-      await createTaskApi(data);
+      const taskData = {
+        ...data,
+        project: data.project || null, // Ensure project is null if not selected
+      };
+      await createTaskApi(taskData);
       onTaskCreated();
       onClose();
     } catch (error) {
@@ -103,6 +110,22 @@ export const NewTaskForm: React.FC<NewTaskFormProps> = ({ onClose, onTaskCreated
             </SelectContent>
           </Select>
         </div>
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="project">Project</Label>
+        <Select onValueChange={(value) => setValue('project', value)}>
+          <SelectTrigger className="w-full">
+            <SelectValue placeholder="Select a project (optional)" />
+          </SelectTrigger>
+          <SelectContent>
+            {projects.map((project) => (
+              <SelectItem key={project.id} value={project.id.toString()}>
+                {project.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
 
       <div className="flex justify-end space-x-2">

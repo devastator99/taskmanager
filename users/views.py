@@ -25,13 +25,10 @@ class LoginView(APIView):
 
 class UserRegistrationView(generics.CreateAPIView):
     queryset = User.objects.all()
-    permission_classes = (IsAdminUser,)
+    permission_classes = (permissions.AllowAny,)
     serializer_class = UserSerializer
 
-    def perform_create(self, serializer):
-        user = serializer.save()
-        user.set_password(self.request.data['password'])
-        user.save()
+
 
 class UserProfileView(generics.RetrieveAPIView):
     serializer_class = UserSerializer

@@ -1,9 +1,9 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { FiGrid, FiCalendar, FiBarChart } from 'react-icons/fi';
+import { FiGrid, FiCalendar, FiList } from 'react-icons/fi';
 import { Button } from '@/components/ui/button';
 
-export type ViewType = 'overview' | 'kanban' | 'calendar' | 'gantt';
+export type ViewType = 'overview' | 'kanban' | 'list' | 'calendar';
 
 interface ViewSelectorProps {
   currentView: ViewType;
@@ -28,17 +28,18 @@ export const ViewSelector: React.FC<ViewSelectorProps> = ({
       description: 'Kanban board'
     },
     {
+      id: 'list' as ViewType,
+      label: 'List',
+      icon: FiList,
+      description: 'List view'
+    },
+    {
       id: 'calendar' as ViewType,
       label: 'Calendar',
       icon: FiCalendar,
       description: 'Calendar view'
     },
-    {
-      id: 'gantt' as ViewType,
-      label: 'Gantt',
-      icon: FiBarChart,
-      description: 'Gantt chart'
-    }
+
   ];
 
   return (

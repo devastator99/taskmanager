@@ -1,5 +1,6 @@
 from django.db import models
 from django.conf import settings
+from projects.models import Project
 
 class Task(models.Model):
     """A simple task with priority, assignment and completion status."""
@@ -13,6 +14,13 @@ class Task(models.Model):
         (PRIORITY_HIGH,   'High'),
     ]
 
+    project      = models.ForeignKey(
+        Project,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='tasks'
+    )
     title        = models.CharField(max_length=255)
     description  = models.TextField(blank=True)
     due_date     = models.DateTimeField()

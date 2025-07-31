@@ -26,6 +26,7 @@ class TaskViewSet(viewsets.ModelViewSet):
         'priority': ['exact'],
         'assigned_to__username': ['exact', 'icontains'],
         'completed': ['exact'],
+        'project': ['exact'],
     }
 
     # Allow clients to order by these fields

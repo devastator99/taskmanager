@@ -92,6 +92,13 @@ export const TaskList: React.FC<TaskListProps> = ({ filters, searchQuery, classN
       );
     }
 
+    // Apply project filter
+    if (filters.project.length > 0) {
+      filtered = filtered.filter(task => 
+        task.projectId && filters.project.includes(task.projectId)
+      );
+    }
+
     // Apply date range filter
     if (filters.dateRange !== 'all') {
       const now = new Date();
@@ -149,7 +156,7 @@ export const TaskList: React.FC<TaskListProps> = ({ filters, searchQuery, classN
 
   if (filteredTasks.length === 0) {
     return (
-      <Card className={className}>
+      <Card className={`${className} p-6`}>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <FiClock className="w-5 h-5" />
