@@ -21,6 +21,7 @@ class Task(models.Model):
         blank=True,
         related_name='tasks'
     )
+    
     title        = models.CharField(max_length=255)
     description  = models.TextField(blank=True)
     due_date     = models.DateTimeField()

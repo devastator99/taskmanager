@@ -42,26 +42,40 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onToggle }) => {
 
   console.log('Form errors:', errors);
 
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const [generalError, setGeneralError] = useState<string | null>(null);
+
   const onSubmit = async (data: LoginFormData) => {
-    console.log('Login form submitted with data:', data);
     setIsLoading(true);
-    try {
-      await login(data.username, data.password);
-      toast({
-        title: "Welcome back!",
-        description: "You've successfully signed in.",
-      });
-      navigate('/');
-    } catch (error) {
-      toast({
-        title: "Login failed",
-        description: error instanceof Error ? error.message : "Please check your credentials and try again.",
-        variant: "destructive",
-      });
-    } finally {
+    setFieldErrors({});
+    setGeneralError(null);
+    const result = await login(data.username, data.password);
+    if (result.error) {
+      if (result.error.fieldErrors) setFieldErrors(result.error.fieldErrors);
+      if (result.error.detail) {
+        setGeneralError(result.error.detail);
+        toast({
+          title: "Login failed",
+          description: result.error.detail,
+          variant: "destructive",
+        });
+      }
       setIsLoading(false);
+      return;
     }
+    toast({
+      title: "Welcome back!",
+      description: "You've successfully signed in.",
+    });
+    // Role-based redirect
+    if (result.role === 'admin') {
+      navigate('/admin');
+    } else {
+      navigate('/dashboard');
+    }
+    setIsLoading(false);
   };
+
 
   return (
     <motion.div
@@ -109,6 +123,9 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onToggle }) => {
               {errors.username && (
                 <p className="text-sm text-destructive">{errors.username.message}</p>
               )}
+              {fieldErrors.username && (
+                <p className="text-sm text-destructive">{fieldErrors.username}</p>
+              )}
             </div>
 
             <div className="space-y-2">
@@ -139,6 +156,9 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onToggle }) => {
               {errors.password && (
                 <p className="text-sm text-destructive">{errors.password.message}</p>
               )}
+              {fieldErrors.password && (
+                <p className="text-sm text-destructive">{fieldErrors.password}</p>
+              )}
             </div>
 
             <div className="text-right">
@@ -147,6 +167,9 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onToggle }) => {
               </Button>
             </div>
 
+            {generalError && (
+              <div className="text-sm text-destructive text-center pb-2">{generalError}</div>
+            )}
             <Button type="submit" className="w-full" disabled={isLoading}>
               {isLoading ? (
                 <>

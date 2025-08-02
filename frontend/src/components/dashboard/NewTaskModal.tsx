@@ -6,9 +6,12 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
+import { useProject } from '@/contexts/ProjectContext';
+
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
@@ -21,7 +24,8 @@ interface NewTaskModalProps {
 }
 
 export const NewTaskModal: React.FC<NewTaskModalProps> = ({ isOpen, onClose }) => {
-  const { createTask, projects } = useTask();
+  const { createTask } = useTask();
+  const { projects } = useProject();
   
   // Mock user for reporter - in real app, this would come from auth context
   const mockUser: User = {
@@ -110,12 +114,19 @@ export const NewTaskModal: React.FC<NewTaskModalProps> = ({ isOpen, onClose }) =
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
+      <DialogContent 
+        className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto"
+        aria-labelledby="new-task-title"
+        aria-describedby="new-task-description"
+      >
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
+          <DialogTitle id="new-task-title" className="flex items-center gap-2">
             <FiFlag className="w-5 h-5" />
             Create New Task
           </DialogTitle>
+          <DialogDescription id="new-task-description">
+            Fill in the details below to create a new task.
+          </DialogDescription>
         </DialogHeader>
         
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -157,7 +168,7 @@ export const NewTaskModal: React.FC<NewTaskModalProps> = ({ isOpen, onClose }) =
                 </SelectTrigger>
                 <SelectContent>
                   {projects.map((project) => (
-                    <SelectItem key={project.id} value={project.id}>
+                    <SelectItem key={project.id} value={project.id.toString()}>
                       <div className="flex items-center gap-2">
                         <div 
                           className="w-3 h-3 rounded-full" 

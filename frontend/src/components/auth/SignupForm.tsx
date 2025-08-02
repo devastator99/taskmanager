@@ -40,6 +40,9 @@ export const SignupForm: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const { signup } = useAuth();
 
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const [generalError, setGeneralError] = useState<string | null>(null);
+
   const {
     register,
     handleSubmit,
@@ -52,24 +55,36 @@ export const SignupForm: React.FC = () => {
   const password = watch('password');
 
   const onSubmit = async (data: SignupFormData) => {
-    console.log('Signup form submitted with data:', data);
     setIsLoading(true);
-    try {
-      await signup(data.email, data.password, data.username);
-      toast({
-        title: "Account created!",
-        description: "Welcome to our platform. You've successfully signed up.",
-      });
-    } catch (error) {
-      toast({
-        title: "Signup failed",
-        description: error instanceof Error ? error.message : "Please try again.",
-        variant: "destructive",
-      });
-    } finally {
+    setFieldErrors({});
+    setGeneralError(null);
+    const result = await signup(data.email, data.password, data.username);
+    if (result.error) {
+      if (result.error.fieldErrors) setFieldErrors(result.error.fieldErrors);
+      if (result.error.detail) {
+        setGeneralError(result.error.detail);
+        toast({
+          title: "Signup failed",
+          description: result.error.detail,
+          variant: "destructive",
+        });
+      }
       setIsLoading(false);
+      return;
     }
+    toast({
+      title: "Account created!",
+      description: "Welcome to our platform. You've successfully signed up.",
+    });
+    // Role-based redirect
+    if (result.role === 'admin') {
+      navigate('/admin');
+    } else {
+      navigate('/dashboard');
+    }
+    setIsLoading(false);
   };
+
 
   return (
     <motion.div
@@ -117,6 +132,9 @@ export const SignupForm: React.FC = () => {
               {errors.username && (
                 <p className="text-sm text-destructive">{errors.username.message}</p>
               )}
+              {fieldErrors.username && (
+                <p className="text-sm text-destructive">{fieldErrors.username}</p>
+              )}
             </div>
 
             <div className="space-y-2">
@@ -133,6 +151,9 @@ export const SignupForm: React.FC = () => {
               </div>
               {errors.email && (
                 <p className="text-sm text-destructive">{errors.email.message}</p>
+              )}
+              {fieldErrors.email && (
+                <p className="text-sm text-destructive">{fieldErrors.email}</p>
               )}
             </div>
 
@@ -165,6 +186,9 @@ export const SignupForm: React.FC = () => {
               {errors.password && (
                 <p className="text-sm text-destructive">{errors.password.message}</p>
               )}
+              {fieldErrors.password && (
+                <p className="text-sm text-destructive">{fieldErrors.password}</p>
+              )}
             </div>
 
             <div className="space-y-2">
@@ -195,8 +219,14 @@ export const SignupForm: React.FC = () => {
               {errors.confirmPassword && (
                 <p className="text-sm text-destructive">{errors.confirmPassword.message}</p>
               )}
+              {fieldErrors.confirmPassword && (
+                <p className="text-sm text-destructive">{fieldErrors.confirmPassword}</p>
+              )}
             </div>
 
+            {generalError && (
+              <div className="text-sm text-destructive text-center pb-2">{generalError}</div>
+            )}
             <Button type="submit" className="w-full flex items-center justify-center" disabled={isLoading}>
               {isLoading ? (
                 <>

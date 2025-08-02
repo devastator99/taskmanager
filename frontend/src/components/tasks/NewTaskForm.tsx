@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -20,8 +20,8 @@ const newTaskSchema = z.object({
   description: z.string().optional(),
   dueDate: z.date().optional(),
   priority: z.enum(['Low', 'Medium', 'High']).default('Medium'),
-  project: z.string().optional(), // Add project field
-});
+  project: z.number().optional(), // Project ID (number) or undefined
+});  
 
 type NewTaskFormData = z.infer<typeof newTaskSchema>;
 
@@ -37,13 +37,20 @@ export const NewTaskForm: React.FC<NewTaskFormProps> = ({ onClose, onTaskCreated
   });
   const { projects } = useProject();
 
+
+  useEffect(() => {
+    console.log("projects here xxxxx: " ,projects)
+  }, [projects]);
+
   const onSubmit = async (data: NewTaskFormData) => {
     setIsLoading(true);
     try {
+      console.log("data here xxxxx: " ,data)
       const taskData = {
         ...data,
-        project: data.project || null, // Ensure project is null if not selected
+        project: data.project !== undefined ? data.project : null, // Ensure project is null if not selected
       };
+      console.log("taskData here xxxxx: " ,taskData)
       await createTaskApi(taskData);
       onTaskCreated();
       onClose();
@@ -114,9 +121,11 @@ export const NewTaskForm: React.FC<NewTaskFormProps> = ({ onClose, onTaskCreated
 
       <div className="space-y-2">
         <Label htmlFor="project">Project</Label>
-        <Select onValueChange={(value) => setValue('project', value)}>
+        <Select onValueChange={(value) => setValue('project', parseInt(value))} value={control._formValues.project?.toString() || ''}>
           <SelectTrigger className="w-full">
-            <SelectValue placeholder="Select a project (optional)" />
+            <SelectValue placeholder="Select a project (optional)">
+              {control._formValues.project ? projects.find(p => p.id === control._formValues.project)?.name : "Select a project (optional)"}
+            </SelectValue>
           </SelectTrigger>
           <SelectContent>
             {projects.map((project) => (

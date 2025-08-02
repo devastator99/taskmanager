@@ -8,17 +8,24 @@ interface User {
   role: string;
 }
 
+export interface AuthError {
+  detail?: string;
+  fieldErrors?: Record<string, string>;
+  status?: number;
+}
+
 export interface AuthContextType {
   user: User | null;
   token: string | null;
   isLoading: boolean;
-  login: (username: string, password: string) => Promise<void>;
-  signup: (email: string, password: string, username: string) => Promise<void>;
+  login: (username: string, password: string) => Promise<{ user?: User; role?: string; error?: AuthError }>;
+  signup: (email: string, password: string, username: string) => Promise<{ user?: User; role?: string; error?: AuthError }>;
   logout: () => void;
   oauthLogin: (provider: string) => Promise<void>;
   isAuthenticated: () => boolean;
   isAdmin: () => boolean;
 }
+
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -143,12 +150,30 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         const data = await response.json();
         setTokens(data.access, data.refresh);
         setUser(data.user);
+        return { user: data.user, role: data.user?.role };
       } else {
-        const error = await response.json();
-        throw new Error(error.detail || 'Login failed');
+        const errorData = await response.json();
+        let fieldErrors = undefined;
+        if (errorData && typeof errorData === 'object') {
+          // DRF field errors
+          fieldErrors = Object.keys(errorData)
+            .filter(key => key !== 'detail')
+            .reduce((acc, key) => ({ ...acc, [key]: errorData[key] }), {});
+        }
+        return {
+          error: {
+            detail: errorData.detail || 'Login failed',
+            fieldErrors,
+            status: response.status,
+          },
+        };
       }
-    } catch (error) {
-      throw error;
+    } catch (error: any) {
+      return {
+        error: {
+          detail: error?.message || 'Network error. Please try again.',
+        },
+      };
     } finally {
       setIsLoading(false);
     }
@@ -169,12 +194,29 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         const data = await response.json();
         setTokens(data.access, data.refresh);
         setUser(data.user);
+        return { user: data.user, role: data.user?.role };
       } else {
-        const error = await response.json();
-        throw new Error(error.detail || 'Signup failed');
+        const errorData = await response.json();
+        let fieldErrors = undefined;
+        if (errorData && typeof errorData === 'object') {
+          fieldErrors = Object.keys(errorData)
+            .filter(key => key !== 'detail')
+            .reduce((acc, key) => ({ ...acc, [key]: errorData[key] }), {});
+        }
+        return {
+          error: {
+            detail: errorData.detail || 'Signup failed',
+            fieldErrors,
+            status: response.status,
+          },
+        };
       }
-    } catch (error) {
-      throw error;
+    } catch (error: any) {
+      return {
+        error: {
+          detail: error?.message || 'Network error. Please try again.',
+        },
+      };
     } finally {
       setIsLoading(false);
     }

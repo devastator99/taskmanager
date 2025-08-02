@@ -7,17 +7,17 @@ export interface User {
 }
 
 export interface Project {
-  id: string;
+  id: number;
   name: string;
-  description: string;
+  description: string | null;
+  due_date: string;
   color: string;
-  status: 'active' | 'completed' | 'archived';
+  status: 'pending' | 'in-progress' | 'completed' | 'archived';
+  priority: 'low' | 'medium' | 'high' | 'urgent';
   owner: User;
-  members: User[];
-  createdAt: Date;
-  updatedAt: Date;
-  dueDate?: Date;
-  progress: number;
+  created_at: string;
+  updated_at: string;
+
 }
 
 export interface Task {
@@ -31,8 +31,8 @@ export interface Task {
   reporter: User;
   createdAt: Date;
   updatedAt: Date;
-  dueDate?: Date;
-  startDate?: Date;
+  due_date?: string;
+  start_date?: string;
   estimatedHours?: number;
   actualHours?: number;
   tags: string[];

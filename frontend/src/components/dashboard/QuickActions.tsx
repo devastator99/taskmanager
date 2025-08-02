@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { FiPlus, FiUsers, FiFolderPlus, FiCalendar, FiZap, FiBook } from 'react-icons/fi';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { NewTaskForm } from '@/components/tasks/NewTaskForm';
 
 
@@ -100,9 +100,16 @@ export const QuickActions: React.FC = () => {
       </Card>
 
       <Dialog open={isNewTaskDialogOpen} onOpenChange={setIsNewTaskDialogOpen}>
-        <DialogContent className="sm:max-w-[425px]">
+        <DialogContent 
+          className="sm:max-w-[425px]"
+          aria-labelledby="quick-actions-title"
+          aria-describedby="quick-actions-desc"
+        >
           <DialogHeader>
-            <DialogTitle>Create New Task</DialogTitle>
+            <DialogTitle id="quick-actions-title">Create New Task</DialogTitle>
+            <DialogDescription id="quick-actions-desc">
+              Fill in the details below to create a new task.
+            </DialogDescription>
           </DialogHeader>
           <NewTaskForm
             onClose={() => setIsNewTaskDialogOpen(false)}

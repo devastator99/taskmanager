@@ -15,6 +15,7 @@ import {
 import { useTask } from '@/contexts/TaskContext';
 import { Task } from '@/types';
 import { FilterOptions } from './DashboardFilters';
+import { useProject } from '@/contexts/ProjectContext';
 
 interface TaskListProps {
   filters: FilterOptions;
@@ -53,7 +54,8 @@ const getStatusColor = (status: string) => {
 };
 
 export const TaskList: React.FC<TaskListProps> = ({ filters, searchQuery, className = '' }) => {
-  const { tasks, updateTask, deleteTask, projects } = useTask();
+  const { tasks, updateTask, deleteTask} = useTask();
+  const {projects} = useProject();
 
   const filteredTasks = useMemo(() => {
     let filtered = tasks;
@@ -105,8 +107,8 @@ export const TaskList: React.FC<TaskListProps> = ({ filters, searchQuery, classN
       const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
       
       filtered = filtered.filter(task => {
-        if (!task.dueDate) return false;
-        const dueDate = new Date(task.dueDate);
+        if (!task.due_date) return false;
+        const dueDate = new Date(task.due_date);
         
         switch (filters.dateRange) {
           case 'today':
@@ -137,8 +139,8 @@ export const TaskList: React.FC<TaskListProps> = ({ filters, searchQuery, classN
       }
       
       // Then by due date
-      if (a.dueDate && b.dueDate) {
-        return new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime();
+      if (a.due_date && b.due_date) {
+        return new Date(a.due_date).getTime() - new Date(b.due_date).getTime();
       }
       
       return 0;
@@ -150,7 +152,7 @@ export const TaskList: React.FC<TaskListProps> = ({ filters, searchQuery, classN
   };
 
   const getProjectName = (projectId: string) => {
-    const project = projects.find(p => p.id === projectId);
+    const project = projects.find(p => p.id === Number(projectId));
     return project?.name || 'Unknown Project';
   };
 
@@ -199,6 +201,8 @@ export const TaskList: React.FC<TaskListProps> = ({ filters, searchQuery, classN
               key={task.id}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
               transition={{ duration: 0.3, delay: index * 0.05 }}
               className="group p-4 rounded-lg border hover:shadow-md transition-all duration-200 bg-card"
             >
@@ -237,10 +241,10 @@ export const TaskList: React.FC<TaskListProps> = ({ filters, searchQuery, classN
                       </div>
                     )}
                     
-                    {task.dueDate && (
+                    {task.due_date && (
                       <div className="flex items-center gap-1">
                         <FiCalendar className="w-3 h-3" />
-                        <span>{formatDistanceToNow(new Date(task.dueDate), { addSuffix: true })}</span>
+                        <span>{formatDistanceToNow(new Date(task.due_date), { addSuffix: true })}</span>
                       </div>
                     )}
                   </div>

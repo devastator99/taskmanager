@@ -1,15 +1,19 @@
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import axios from 'axios';
 import { useAuth } from './AuthContext';
+import { User } from '../types';
 
 export interface Project {
   id: number;
   name: string;
-  description: string;
+  color: string;
+  description: string | null;
   due_date: string;
   status: 'pending' | 'in-progress' | 'completed' | 'archived';
   priority: 'low' | 'medium' | 'high' | 'urgent';
-  // Add other project-related fields as needed
+  owner: User;
+  created_at: string;
+  updated_at: string;
 }
 
 interface ProjectContextType {
@@ -18,6 +22,8 @@ interface ProjectContextType {
   updateProject: (project: Project) => Promise<void>;
   deleteProject: (id: number) => Promise<void>;
   getProjectById: (id: number) => Project | undefined;
+  selectedProject: Project | null;
+  setSelectedProject: (project: Project | null) => void;
 }
 
 const ProjectContext = createContext<ProjectContextType | undefined>(undefined);
@@ -28,6 +34,7 @@ interface ProjectProviderProps {
 
 export const ProjectProvider: React.FC<ProjectProviderProps> = ({ children }) => {
   const [projects, setProjects] = useState<Project[]>([]);
+  const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const { token } = useAuth();
 
   useEffect(() => {
@@ -41,8 +48,12 @@ export const ProjectProvider: React.FC<ProjectProviderProps> = ({ children }) =>
   useEffect(() => {
     const fetchProjects = async () => {
       try {
+        console.log('Fetching projects...');
+        console.log('Token:', token);
         const response = await axios.get('/api/projects/');
+        console.log('Projects fetched:', response.data);
         setProjects(response.data);
+        console.log('Projects set:', projects);
       } catch (error) {
         console.error('Error fetching projects:', error);
       }
@@ -96,6 +107,8 @@ export const ProjectProvider: React.FC<ProjectProviderProps> = ({ children }) =>
         updateProject,
         deleteProject,
         getProjectById,
+        selectedProject,
+        setSelectedProject,
       }}
     >
       {children}

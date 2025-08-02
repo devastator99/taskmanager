@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { FiSearch, FiBell, FiMenu, FiSun, FiMoon, FiMonitor, FiPlus, FiFolder, FiChevronDown, FiHome, FiInbox, FiCalendar, FiSettings, FiGrid, FiList } from 'react-icons/fi';
+import { FiSearch, FiBell, FiMenu, FiSun, FiMoon, FiMonitor, FiPlus, FiFolder, FiChevronDown, FiHome, FiInbox, FiCalendar, FiSettings, FiGrid, FiList, FiCheck } from 'react-icons/fi';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -10,15 +10,24 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useTask } from '@/contexts/TaskContext';
+import { useProject } from '@/contexts/ProjectContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { NewTaskModal } from '@/components/dashboard/NewTaskModal';
 import { cn } from '@/lib/utils';
 import { ViewSelector, ViewType } from '@/components/dashboard/ViewSelector';
+import { CreateProjectDialog } from '@/components/projects/CreateProjectDialog';
+import { Project } from '@/types';
 
 export const Header: React.FC = () => {
   const location = useLocation();
   const { theme, setTheme } = useTheme();
-  const { projects, selectedProject, setSelectedProject, metrics, searchQuery, setSearchQuery, notifications } = useTask();
+  const [open, setOpen] = useState(false);
+  // Use ProjectContext for project state
+  const { projects, selectedProject, setSelectedProject } = useProject();
+  // Use TaskContext for notifications and search
+  const { searchQuery, setSearchQuery, notifications } = useTask();
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const { user, isAdmin, logout } = useAuth();
   const [showNewTaskModal, setShowNewTaskModal] = useState(false);
 
@@ -56,34 +65,78 @@ export const Header: React.FC = () => {
     </nav>
   );
 
-  const ProjectSwitcher: React.FC<{ isMobile?: boolean }> = ({ isMobile = false }) => (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button variant="ghost" className={cn('gap-2', isMobile ? 'w-full justify-start' : 'w-auto')}>
-          {selectedProject ? (
+    // Remove unused createProject since we're using it from the context
+
+  const ProjectSwitcher: React.FC<{ isMobile?: boolean }> = ({ isMobile = false }) => {
+    const handleProjectCreated = (newProject: Project) => {
+      setSelectedProject(newProject);
+      setOpen(false); // Close the dropdown after creating a project
+    };
+
+    return (
+      <DropdownMenu>  
+        <DropdownMenuTrigger asChild>
+          <Button variant="ghost" className={cn('gap-2', isMobile ? 'w-full justify-start' : 'w-auto')}>
+            {selectedProject ? (
+              <>
+                <div 
+                  className="w-3 h-3 rounded-full flex-shrink-0" 
+                  style={{ backgroundColor: selectedProject.color }} 
+                />
+                <span className="truncate max-w-[120px]">{selectedProject.name}</span>
+              </>
+            ) : (
+              <span>Select Project</span>
+            )}
+            <FiChevronDown className="h-4 w-4 flex-shrink-0" />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent className="w-64 max-h-[400px] overflow-y-auto">
+          <div className="px-2 py-1.5 text-sm font-medium text-muted-foreground">
+            Your Projects
+          </div>
+          {isLoading ? (
+            <div className="px-2 py-2 text-sm text-muted-foreground">Loading projects...</div>
+          ) : error ? (
+            <div className="px-2 py-2 text-sm text-destructive">{error}</div>
+          ) : projects.length === 0 ? (
+            <div className="px-2 py-2 text-sm text-muted-foreground">No projects found</div>
+          ) : (
             <>
-              <div className="w-3 h-3 rounded-full" style={{ backgroundColor: selectedProject.color }} />
-              {selectedProject.name}
+              {projects.map((project) => (
+                <DropdownMenuItem 
+                  key={project.id} 
+                  onClick={() => setSelectedProject(project)}
+                  className="flex items-center justify-between hover:bg-accent/50"
+                >
+                  <div className="flex items-center gap-2 flex-1 min-w-0">
+                    <div 
+                      className="w-3 h-3 rounded-full flex-shrink-0" 
+                      style={{ backgroundColor: project.color || '#3B82F6' }} 
+                    />
+                    <span className="truncate">{project.name}</span>
+                  </div>
+                  {selectedProject?.id === project.id && (
+                    <FiCheck className="h-4 w-4 text-primary flex-shrink-0" />
+                  )}
+                </DropdownMenuItem>
+              ))}
             </>
-          ) : 'Projects'}
-          <FiChevronDown className="h-4 w-4" />
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-64">
-        {projects.map((project) => (
-          <DropdownMenuItem key={project.id} onClick={() => setSelectedProject(project)}>
-            <div className="w-3 h-3 rounded-full mr-2" style={{ backgroundColor: project.color }} />
-            {project.name}
-          </DropdownMenuItem>
-        ))}
-        <DropdownMenuSeparator />
-        <DropdownMenuItem>
-          <FiPlus className="mr-2 h-4 w-4" />
-          Create Project
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
-  );
+          )}
+          <DropdownMenuSeparator />
+          <CreateProjectDialog onProjectCreated={handleProjectCreated}>
+            <DropdownMenuItem 
+              onSelect={(e) => e.preventDefault()}
+              className="cursor-pointer hover:bg-accent/50 focus:bg-accent/50"
+            >
+              <FiPlus className="mr-2 h-4 w-4" />
+              <span>Create Project</span>
+            </DropdownMenuItem>
+          </CreateProjectDialog>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    );
+  };
 
   const currentView: ViewType = (() => {
     switch (location.pathname) {
@@ -108,7 +161,7 @@ export const Header: React.FC = () => {
     <header className="bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-border sticky top-0 z-30">
       <div className="flex items-center justify-between px-4 py-2">
         {/* Left Section */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-5">
           <Sheet>
             <SheetTrigger asChild>
               <Button variant="ghost" size="sm" className="lg:hidden">
