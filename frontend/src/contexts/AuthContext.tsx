@@ -47,7 +47,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   useEffect(() => {
     const { access } = getTokens();
-    setToken(access);
+    if (access) {
+      setToken(access);
+      // If we have a token, try to fetch user data to restore session
+      fetchUser();
+    } else {
+      setIsLoading(false);
+    }
   }, []);
 
   const setTokens = (access: string, refresh: string) => {
@@ -97,7 +103,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
 
     try {
-      const response = await fetch('http://localhost:8000/api/auth/user/', {
+      const response = await fetch('http://localhost:8000/api/auth/profile/', {
         headers: {
           'Authorization': `Bearer ${access}`,
         },
@@ -232,9 +238,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     window.location.href = `http://localhost:8000/api/auth/oauth/${provider}/`;
   };
 
-  useEffect(() => {
-    fetchUser();
-  }, []);
+  // Remove duplicate fetchUser call since it's now called in the token useEffect
 
   const value = {
     user,

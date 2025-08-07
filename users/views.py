@@ -30,9 +30,14 @@ class UserRegistrationView(generics.CreateAPIView):
 
 
 
-class UserProfileView(generics.RetrieveAPIView):
+class UserProfileView(generics.RetrieveUpdateAPIView):
     serializer_class = UserSerializer
-    permission_classes = (IsOwnerOrAdmin,)
+    permission_classes = [permissions.IsAuthenticated]
 
     def get_object(self):
         return self.request.user
+    
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context['include_stats'] = True
+        return context

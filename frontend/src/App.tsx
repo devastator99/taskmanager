@@ -15,6 +15,7 @@ import { CalendarView } from './components/dashboard/CalendarView';
 import { AuthPage } from './components/auth/AuthPage';
 import { ProtectedRoute } from './components/auth/ProtectedRoute';
 import { AdminDashboard } from './components/admin/AdminDashboard';
+import { ProfilePage } from './components/profile/ProfilePage';
 
 function App() {
   return (
@@ -63,6 +64,7 @@ function MainApp() {
           <Route path="/kanban" element={<ProtectedRoute><KanbanBoard /></ProtectedRoute>} />
           <Route path="/list" element={<ProtectedRoute><TaskList filters={{ status: [], priority: [], assignee: [], dateRange: 'all', tags: [], project: [] }} searchQuery="" /></ProtectedRoute>} />
           <Route path="/calendar" element={<ProtectedRoute><CalendarView/></ProtectedRoute>} />
+          <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
           <Route path="/admin" element={<ProtectedRoute adminOnly><AdminDashboard /></ProtectedRoute>} />
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
